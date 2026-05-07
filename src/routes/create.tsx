@@ -77,9 +77,9 @@ function Create() {
           <label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">When</label>
           <div className="mt-2 grid grid-cols-2 gap-2">
             {([
-              { v: "standard", label: "Standard", sub: "Within 3 days" },
-              { v: "same_day", label: "Same day", sub: "Today" },
-              { v: "urgent", label: "Urgent", sub: "< 4 hours" },
+              { v: "standard", label: "Standard", sub: "Within 3 days", emergency: false },
+              { v: "same_day", label: "Same day", sub: "Today", emergency: false },
+              { v: "urgent", label: "Urgent", sub: "< 4 hours", emergency: false },
               { v: "emergency", label: "Emergency", sub: "Now · +$45", emergency: true },
             ] as const).map((o) => (
               <button
