@@ -9,38 +9,287 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrackRouteImport } from './routes/track'
+import { Route as ScopeRouteImport } from './routes/scope'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as JobsRouteImport } from './routes/jobs'
+import { Route as DispatchRouteImport } from './routes/dispatch'
+import { Route as CreateRouteImport } from './routes/create'
+import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProviderScheduleRouteImport } from './routes/provider/schedule'
+import { Route as ProviderProfileRouteImport } from './routes/provider/profile'
+import { Route as ProviderOfferRouteImport } from './routes/provider/offer'
+import { Route as ProviderEarningsRouteImport } from './routes/provider/earnings'
+import { Route as ProviderDashboardRouteImport } from './routes/provider/dashboard'
 
+const TrackRoute = TrackRouteImport.update({
+  id: '/track',
+  path: '/track',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScopeRoute = ScopeRouteImport.update({
+  id: '/scope',
+  path: '/scope',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobsRoute = JobsRouteImport.update({
+  id: '/jobs',
+  path: '/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DispatchRoute = DispatchRouteImport.update({
+  id: '/dispatch',
+  path: '/dispatch',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreateRoute = CreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivityRoute = ActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProviderScheduleRoute = ProviderScheduleRouteImport.update({
+  id: '/provider/schedule',
+  path: '/provider/schedule',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProviderProfileRoute = ProviderProfileRouteImport.update({
+  id: '/provider/profile',
+  path: '/provider/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProviderOfferRoute = ProviderOfferRouteImport.update({
+  id: '/provider/offer',
+  path: '/provider/offer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProviderEarningsRoute = ProviderEarningsRouteImport.update({
+  id: '/provider/earnings',
+  path: '/provider/earnings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProviderDashboardRoute = ProviderDashboardRouteImport.update({
+  id: '/provider/dashboard',
+  path: '/provider/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
+  '/chat': typeof ChatRoute
+  '/create': typeof CreateRoute
+  '/dispatch': typeof DispatchRoute
+  '/jobs': typeof JobsRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/scope': typeof ScopeRoute
+  '/track': typeof TrackRoute
+  '/provider/dashboard': typeof ProviderDashboardRoute
+  '/provider/earnings': typeof ProviderEarningsRoute
+  '/provider/offer': typeof ProviderOfferRoute
+  '/provider/profile': typeof ProviderProfileRoute
+  '/provider/schedule': typeof ProviderScheduleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
+  '/chat': typeof ChatRoute
+  '/create': typeof CreateRoute
+  '/dispatch': typeof DispatchRoute
+  '/jobs': typeof JobsRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/scope': typeof ScopeRoute
+  '/track': typeof TrackRoute
+  '/provider/dashboard': typeof ProviderDashboardRoute
+  '/provider/earnings': typeof ProviderEarningsRoute
+  '/provider/offer': typeof ProviderOfferRoute
+  '/provider/profile': typeof ProviderProfileRoute
+  '/provider/schedule': typeof ProviderScheduleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
+  '/chat': typeof ChatRoute
+  '/create': typeof CreateRoute
+  '/dispatch': typeof DispatchRoute
+  '/jobs': typeof JobsRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
+  '/scope': typeof ScopeRoute
+  '/track': typeof TrackRoute
+  '/provider/dashboard': typeof ProviderDashboardRoute
+  '/provider/earnings': typeof ProviderEarningsRoute
+  '/provider/offer': typeof ProviderOfferRoute
+  '/provider/profile': typeof ProviderProfileRoute
+  '/provider/schedule': typeof ProviderScheduleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/activity'
+    | '/chat'
+    | '/create'
+    | '/dispatch'
+    | '/jobs'
+    | '/login'
+    | '/profile'
+    | '/scope'
+    | '/track'
+    | '/provider/dashboard'
+    | '/provider/earnings'
+    | '/provider/offer'
+    | '/provider/profile'
+    | '/provider/schedule'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/activity'
+    | '/chat'
+    | '/create'
+    | '/dispatch'
+    | '/jobs'
+    | '/login'
+    | '/profile'
+    | '/scope'
+    | '/track'
+    | '/provider/dashboard'
+    | '/provider/earnings'
+    | '/provider/offer'
+    | '/provider/profile'
+    | '/provider/schedule'
+  id:
+    | '__root__'
+    | '/'
+    | '/activity'
+    | '/chat'
+    | '/create'
+    | '/dispatch'
+    | '/jobs'
+    | '/login'
+    | '/profile'
+    | '/scope'
+    | '/track'
+    | '/provider/dashboard'
+    | '/provider/earnings'
+    | '/provider/offer'
+    | '/provider/profile'
+    | '/provider/schedule'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivityRoute: typeof ActivityRoute
+  ChatRoute: typeof ChatRoute
+  CreateRoute: typeof CreateRoute
+  DispatchRoute: typeof DispatchRoute
+  JobsRoute: typeof JobsRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
+  ScopeRoute: typeof ScopeRoute
+  TrackRoute: typeof TrackRoute
+  ProviderDashboardRoute: typeof ProviderDashboardRoute
+  ProviderEarningsRoute: typeof ProviderEarningsRoute
+  ProviderOfferRoute: typeof ProviderOfferRoute
+  ProviderProfileRoute: typeof ProviderProfileRoute
+  ProviderScheduleRoute: typeof ProviderScheduleRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/track': {
+      id: '/track'
+      path: '/track'
+      fullPath: '/track'
+      preLoaderRoute: typeof TrackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scope': {
+      id: '/scope'
+      path: '/scope'
+      fullPath: '/scope'
+      preLoaderRoute: typeof ScopeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs': {
+      id: '/jobs'
+      path: '/jobs'
+      fullPath: '/jobs'
+      preLoaderRoute: typeof JobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dispatch': {
+      id: '/dispatch'
+      path: '/dispatch'
+      fullPath: '/dispatch'
+      preLoaderRoute: typeof DispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +297,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/provider/schedule': {
+      id: '/provider/schedule'
+      path: '/provider/schedule'
+      fullPath: '/provider/schedule'
+      preLoaderRoute: typeof ProviderScheduleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provider/profile': {
+      id: '/provider/profile'
+      path: '/provider/profile'
+      fullPath: '/provider/profile'
+      preLoaderRoute: typeof ProviderProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provider/offer': {
+      id: '/provider/offer'
+      path: '/provider/offer'
+      fullPath: '/provider/offer'
+      preLoaderRoute: typeof ProviderOfferRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provider/earnings': {
+      id: '/provider/earnings'
+      path: '/provider/earnings'
+      fullPath: '/provider/earnings'
+      preLoaderRoute: typeof ProviderEarningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provider/dashboard': {
+      id: '/provider/dashboard'
+      path: '/provider/dashboard'
+      fullPath: '/provider/dashboard'
+      preLoaderRoute: typeof ProviderDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivityRoute: ActivityRoute,
+  ChatRoute: ChatRoute,
+  CreateRoute: CreateRoute,
+  DispatchRoute: DispatchRoute,
+  JobsRoute: JobsRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
+  ScopeRoute: ScopeRoute,
+  TrackRoute: TrackRoute,
+  ProviderDashboardRoute: ProviderDashboardRoute,
+  ProviderEarningsRoute: ProviderEarningsRoute,
+  ProviderOfferRoute: ProviderOfferRoute,
+  ProviderProfileRoute: ProviderProfileRoute,
+  ProviderScheduleRoute: ProviderScheduleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

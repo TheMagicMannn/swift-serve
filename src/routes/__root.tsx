@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
+import { AppProvider } from "@/lib/app-state";
 
 function NotFoundComponent() {
   return (
@@ -72,11 +73,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "Tasker — On-demand local services" },
+      { name: "description", content: "AI-powered local services. Describe it, get a fixed price, dispatched instantly." },
+      { name: "author", content: "Tasker" },
+      { name: "theme-color", content: "#0a0a1a" },
+      { property: "og:title", content: "Tasker — On-demand local services" },
+      { property: "og:description", content: "AI-powered local services. Describe it, get a fixed price, dispatched instantly." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
@@ -113,7 +115,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <AppProvider>
+        <Outlet />
+      </AppProvider>
     </QueryClientProvider>
   );
 }
