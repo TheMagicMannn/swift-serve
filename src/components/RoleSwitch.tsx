@@ -1,4 +1,4 @@
-import { useApp } from "@/lib/app-state";
+import { useApp, type Role } from "@/lib/app-state";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 
@@ -7,11 +7,11 @@ export function RoleSwitch() {
   const nav = useNavigate();
   return (
     <div className="glass rounded-full p-1 flex text-xs font-medium">
-      {(["customer", "provider"] as const).map((r) => (
+      {(["customer", "provider"] as const).map((r: Role) => (
         <button
           key={r}
-          onClick={() => {
-            setRole(r);
+          onClick={async () => {
+            await setRole(r);
             nav({ to: r === "customer" ? "/" : "/provider/dashboard" });
           }}
           className={cn(
