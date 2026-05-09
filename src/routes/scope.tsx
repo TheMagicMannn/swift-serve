@@ -66,6 +66,12 @@ function Scope() {
           scope: aiScope,
         },
       });
+      try {
+        const r = await dispatchFn({ data: { job_id: id } });
+        if (r.sent === 0) toast.message("No providers online — we'll keep trying.");
+      } catch {
+        // non-fatal
+      }
       toast.success("Job dispatched");
       nav({ to: "/dispatch", search: { id } as never });
     } catch (e) {
