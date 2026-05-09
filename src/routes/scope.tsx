@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles, Check, Clock, Wrench, AlertTriangle, ShieldCheck, 
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { scopeJob, createJob, type AiScope } from "@/lib/jobs.functions";
+import { dispatchOffers } from "@/lib/dispatch.functions";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -24,6 +25,7 @@ function Scope() {
   const search = Route.useSearch();
   const scope = useServerFn(scopeJob);
   const create = useServerFn(createJob);
+  const dispatchFn = useServerFn(dispatchOffers);
   const [aiScope, setAiScope] = useState<AiScope | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,6 +66,12 @@ function Scope() {
           scope: aiScope,
         },
       });
+      try {
+        const r = await dispatchFn({ data: { job_id: id } });
+        if (r.sent === 0) toast.message("No providers online — we'll keep trying.");
+      } catch {
+        // non-fatal
+      }
       toast.success("Job dispatched");
       nav({ to: "/dispatch", search: { id } as never });
     } catch (e) {
