@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { installAuthFetch } from "@/lib/auth-fetch";
 
 export type Role = "customer" | "provider" | "admin";
 
