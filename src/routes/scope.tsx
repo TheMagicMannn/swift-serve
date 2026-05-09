@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles, Check, Clock, Wrench, AlertTriangle, ShieldCheck, 
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { scopeJob, createJob, type AiScope } from "@/lib/jobs.functions";
+import { dispatchOffers } from "@/lib/dispatch.functions";
 import { toast } from "sonner";
 import { z } from "zod";
 
