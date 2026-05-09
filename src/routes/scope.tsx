@@ -25,6 +25,7 @@ function Scope() {
   const search = Route.useSearch();
   const scope = useServerFn(scopeJob);
   const create = useServerFn(createJob);
+  const dispatchFn = useServerFn(dispatchOffers);
   const [aiScope, setAiScope] = useState<AiScope | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
