@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      jobs: {
+        Row: {
+          address: string
+          created_at: string
+          customer_id: string
+          description: string
+          id: string
+          labor_cents: number | null
+          materials_cents: number | null
+          media_paths: string[]
+          platform_cents: number | null
+          price_cents: number | null
+          provider_id: string | null
+          scope_category: string | null
+          scope_confidence: number | null
+          scope_duration_minutes: number | null
+          scope_notes: string | null
+          scope_risk: string | null
+          scope_skill: string | null
+          scope_tasks: string[] | null
+          scope_title: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+          urgency: Database["public"]["Enums"]["job_urgency"]
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          customer_id: string
+          description: string
+          id?: string
+          labor_cents?: number | null
+          materials_cents?: number | null
+          media_paths?: string[]
+          platform_cents?: number | null
+          price_cents?: number | null
+          provider_id?: string | null
+          scope_category?: string | null
+          scope_confidence?: number | null
+          scope_duration_minutes?: number | null
+          scope_notes?: string | null
+          scope_risk?: string | null
+          scope_skill?: string | null
+          scope_tasks?: string[] | null
+          scope_title?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["job_urgency"]
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          customer_id?: string
+          description?: string
+          id?: string
+          labor_cents?: number | null
+          materials_cents?: number | null
+          media_paths?: string[]
+          platform_cents?: number | null
+          price_cents?: number | null
+          provider_id?: string | null
+          scope_category?: string | null
+          scope_confidence?: number | null
+          scope_duration_minutes?: number | null
+          scope_notes?: string | null
+          scope_risk?: string | null
+          scope_skill?: string | null
+          scope_tasks?: string[] | null
+          scope_title?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+          urgency?: Database["public"]["Enums"]["job_urgency"]
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active_role: Database["public"]["Enums"]["app_role"]
@@ -83,6 +158,17 @@ export type Database = {
     }
     Enums: {
       app_role: "customer" | "provider" | "admin"
+      job_status:
+        | "draft"
+        | "scoping"
+        | "dispatching"
+        | "assigned"
+        | "en_route"
+        | "arrived"
+        | "in_progress"
+        | "completed"
+        | "cancelled"
+      job_urgency: "standard" | "urgent" | "emergency"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -211,6 +297,18 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["customer", "provider", "admin"],
+      job_status: [
+        "draft",
+        "scoping",
+        "dispatching",
+        "assigned",
+        "en_route",
+        "arrived",
+        "in_progress",
+        "completed",
+        "cancelled",
+      ],
+      job_urgency: ["standard", "urgent", "emergency"],
     },
   },
 } as const
