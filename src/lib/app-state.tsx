@@ -58,6 +58,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [session, loadUserData]);
 
   useEffect(() => {
+    installAuthFetch();
     // 1) Set up listener BEFORE getting session (per Supabase guidance)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
