@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      job_offers: {
+        Row: {
+          created_at: string
+          eta_minutes: number | null
+          expires_at: string
+          id: string
+          job_id: string
+          match_score: number
+          provider_id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          eta_minutes?: number | null
+          expires_at?: string
+          id?: string
+          job_id: string
+          match_score?: number
+          provider_id: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          eta_minutes?: number | null
+          expires_at?: string
+          id?: string
+          job_id?: string
+          match_score?: number
+          provider_id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_offers_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       jobs: {
         Row: {
           address: string
@@ -122,6 +169,62 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_profiles: {
+        Row: {
+          base_lat: number | null
+          base_lng: number | null
+          bio: string | null
+          completed_count: number
+          created_at: string
+          id: string
+          is_online: boolean
+          payout_method: string | null
+          rating: number
+          service_radius_km: number
+          skills: string[]
+          updated_at: string
+          vehicle: string | null
+        }
+        Insert: {
+          base_lat?: number | null
+          base_lng?: number | null
+          bio?: string | null
+          completed_count?: number
+          created_at?: string
+          id: string
+          is_online?: boolean
+          payout_method?: string | null
+          rating?: number
+          service_radius_km?: number
+          skills?: string[]
+          updated_at?: string
+          vehicle?: string | null
+        }
+        Update: {
+          base_lat?: number | null
+          base_lng?: number | null
+          bio?: string | null
+          completed_count?: number
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          payout_method?: string | null
+          rating?: number
+          service_radius_km?: number
+          skills?: string[]
+          updated_at?: string
+          vehicle?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -148,6 +251,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_job_offer: {
+        Args: { _offer_id: string }
+        Returns: {
+          job_id: string
+          status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -169,6 +279,12 @@ export type Database = {
         | "completed"
         | "cancelled"
       job_urgency: "standard" | "urgent" | "emergency"
+      offer_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "expired"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -309,6 +425,7 @@ export const Constants = {
         "cancelled",
       ],
       job_urgency: ["standard", "urgent", "emergency"],
+      offer_status: ["pending", "accepted", "declined", "expired", "cancelled"],
     },
   },
 } as const
