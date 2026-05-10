@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      job_completions: {
+        Row: {
+          created_at: string
+          customer_confirmed_at: string | null
+          customer_id: string
+          id: string
+          job_id: string
+          proof_paths: string[]
+          provider_id: string
+          provider_notes: string | null
+          rating: number | null
+          review: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_confirmed_at?: string | null
+          customer_id: string
+          id?: string
+          job_id: string
+          proof_paths?: string[]
+          provider_id: string
+          provider_notes?: string | null
+          rating?: number | null
+          review?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_confirmed_at?: string | null
+          customer_id?: string
+          id?: string
+          job_id?: string
+          proof_paths?: string[]
+          provider_id?: string
+          provider_notes?: string | null
+          rating?: number | null
+          review?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_offers: {
         Row: {
           created_at: string
@@ -133,6 +175,30 @@ export type Database = {
           status?: Database["public"]["Enums"]["job_status"]
           updated_at?: string
           urgency?: Database["public"]["Enums"]["job_urgency"]
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          job_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          job_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          sender_id?: string
         }
         Relationships: []
       }
