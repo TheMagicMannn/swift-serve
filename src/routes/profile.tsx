@@ -19,7 +19,7 @@ const items = [
 ];
 
 function Profile() {
-  const { user, profile, signOut, refreshProfile, role } = useApp();
+  const { user, profile, signOut, refreshProfile, role, roles } = useApp();
   const nav = useNavigate();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
@@ -97,6 +97,15 @@ function Profile() {
             );
           })}
         </div>
+
+        {roles.includes("admin") && (
+          <button
+            onClick={() => nav({ to: "/admin" })}
+            className="mt-3 w-full glass-strong rounded-2xl py-3.5 flex items-center justify-center gap-2 text-primary text-sm font-semibold"
+          >
+            <Shield className="w-4 h-4" />Open admin console
+          </button>
+        )}
 
         <button
           onClick={async () => { await signOut(); nav({ to: "/login" }); }}
