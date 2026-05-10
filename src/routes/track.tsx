@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
-import { Phone, MessageSquare, Star, Shield, Clock, Loader2 } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { Phone, MessageSquare, Star, Shield, Clock, Loader2, Camera, X, Plus } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
 import { useServerFn } from "@tanstack/react-start";
 import { updateJobStatus } from "@/lib/dispatch.functions";
+import { getCompletion, submitCompletion, submitRating } from "@/lib/completion.functions";
 import { toast } from "sonner";
 
 const Search = z.object({ id: z.string().uuid().optional() });
@@ -25,13 +26,22 @@ type Job = {
   address: string;
 };
 
+type Completion = {
+  id: string;
+  proof_paths: string[];
+  provider_notes: string | null;
+  rating: number | null;
+  review: string | null;
+  customer_confirmed_at: string | null;
+};
+
 const STAGES: { key: string; label: string }[] = [
   { key: "dispatching", label: "Dispatched" },
   { key: "assigned", label: "Accepted" },
   { key: "en_route", label: "En route" },
   { key: "arrived", label: "Arrived" },
-  { key: "in_progress", label: "In progress" },
-  { key: "completed", label: "Completed" },
+  { key: "in_progress", label: "Working" },
+  { key: "completed", label: "Done" },
 ];
 
 function Track() {
@@ -39,9 +49,14 @@ function Track() {
   const { user } = useApp();
   const nav = useNavigate();
   const updateStatus = useServerFn(updateJobStatus);
+  const fetchCompletion = useServerFn(getCompletion);
+  const submitDone = useServerFn(submitCompletion);
+  const submitRate = useServerFn(submitRating);
   const [job, setJob] = useState<Job | null>(null);
   const [providerName, setProviderName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [completion, setCompletion] = useState<Completion | null>(null);
+  const [proofUrls, setProofUrls] = useState<string[]>([]);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -51,7 +66,12 @@ function Track() {
       const { data: p } = await supabase.from("profiles").select("full_name").eq("id", data.provider_id).maybeSingle();
       setProviderName(p?.full_name ?? null);
     }
-  }, [id]);
+    try {
+      const res = await fetchCompletion({ data: { job_id: id } });
+      setCompletion((res as { completion: Completion | null }).completion);
+      setProofUrls((res as { signedUrls: string[] }).signedUrls);
+    } catch {/* ignore */}
+  }, [id, fetchCompletion]);
 
   useEffect(() => {
     if (!id) { setLoading(false); return; }
@@ -63,11 +83,11 @@ function Track() {
     return () => { supabase.removeChannel(ch); };
   }, [id, load]);
 
-  const isProvider = job?.provider_id && user?.id === job.provider_id;
+  const isProvider = !!(job?.provider_id && user?.id === job.provider_id);
   const stageIdx = job ? STAGES.findIndex((s) => s.key === job.status) : -1;
   const fmt = (c: number | null) => c ? `$${(c/100).toFixed(0)}` : "—";
 
-  const advance = async (next: "en_route" | "arrived" | "in_progress" | "completed") => {
+  const advance = async (next: "en_route" | "arrived" | "in_progress") => {
     if (!job) return;
     try {
       await updateStatus({ data: { job_id: job.id, status: next } });
@@ -100,13 +120,12 @@ function Track() {
     if (job.status === "assigned") return { label: "Start trip", next: "en_route" as const };
     if (job.status === "en_route") return { label: "I've arrived", next: "arrived" as const };
     if (job.status === "arrived") return { label: "Start work", next: "in_progress" as const };
-    if (job.status === "in_progress") return { label: "Mark complete", next: "completed" as const };
     return null;
   })();
 
   return (
     <MobileShell>
-      <div className="relative h-[45vh] overflow-hidden">
+      <div className="relative h-[40vh] overflow-hidden">
         <div className="absolute inset-0" style={{
           background: "radial-gradient(circle at 30% 40%, oklch(0.30 0.10 275 / 0.6), transparent 50%), radial-gradient(circle at 70% 70%, oklch(0.25 0.08 290 / 0.4), transparent 50%), oklch(0.10 0.04 270)",
         }}>
@@ -119,15 +138,6 @@ function Track() {
             <rect width="100%" height="100%" fill="url(#grid)"/>
             <path d="M 0 200 Q 150 180 200 220 T 400 200" stroke="oklch(0.62 0.22 275)" strokeWidth="3" fill="none" strokeDasharray="8 4"/>
           </svg>
-          <div className="absolute top-[35%] left-[28%]">
-            <div className="relative">
-              <div className="w-12 h-12 rounded-full gradient-primary grid place-items-center text-xs font-bold text-primary-foreground shadow-glow border-2 border-white">{initials}</div>
-              <div className="absolute inset-0 rounded-full border-2 border-primary animate-ping"/>
-            </div>
-          </div>
-          <div className="absolute bottom-[25%] right-[25%]">
-            <div className="w-10 h-10 rounded-full gradient-success grid place-items-center text-lg shadow-glow border-2 border-white">🏠</div>
-          </div>
         </div>
         <div className="absolute top-12 left-5 right-5 flex justify-between">
           <Link to={isProvider ? "/provider/dashboard" : "/jobs"} className="w-10 h-10 glass-strong rounded-full grid place-items-center">←</Link>
@@ -135,7 +145,7 @@ function Track() {
         </div>
       </div>
 
-      <div className="-mt-8 relative bg-background rounded-t-3xl border-t border-white/5 px-5 pt-5 pb-6">
+      <div className="-mt-8 relative bg-background rounded-t-3xl border-t border-white/5 px-5 pt-5 pb-32">
         <div className="w-12 h-1 rounded-full bg-white/15 mx-auto mb-5"/>
 
         {job.provider_id && (
@@ -179,6 +189,7 @@ function Track() {
           </div>
         </div>
 
+        {/* Provider transition actions */}
         {isProvider && nextAction && (
           <button
             onClick={() => advance(nextAction.next)}
@@ -188,10 +199,191 @@ function Track() {
           </button>
         )}
 
+        {/* Provider: submit completion proof */}
+        {isProvider && job.status === "in_progress" && (
+          <CompletionForm
+            jobId={job.id}
+            userId={user!.id}
+            onDone={() => load()}
+            onSubmit={(payload) => submitDone({ data: payload })}
+          />
+        )}
+
+        {/* Existing completion proof view */}
+        {(job.status === "completed" || completion) && completion && (
+          <div className="mt-5 glass-strong rounded-2xl p-4">
+            <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2">Proof of completion</div>
+            {proofUrls.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {proofUrls.map((u, i) => (
+                  <a key={i} href={u} target="_blank" rel="noreferrer" className="aspect-square rounded-xl overflow-hidden border border-white/5">
+                    <img src={u} alt="" className="w-full h-full object-cover"/>
+                  </a>
+                ))}
+              </div>
+            )}
+            {completion.provider_notes && (
+              <div className="mt-3 text-sm text-muted-foreground">"{completion.provider_notes}"</div>
+            )}
+            {completion.rating && (
+              <div className="mt-3 flex items-center gap-1 text-sm">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`w-4 h-4 ${i < (completion.rating ?? 0) ? "fill-warning text-warning" : "text-muted-foreground"}`}/>
+                ))}
+                {completion.review && <span className="ml-2 text-muted-foreground">— "{completion.review}"</span>}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Customer: rating */}
+        {!isProvider && job.status === "completed" && completion && !completion.rating && (
+          <RatingForm onSubmit={async (rating, review) => {
+            try {
+              await submitRate({ data: { job_id: job.id, rating, review } });
+              toast.success("Thanks for rating!");
+              load();
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : "Rating failed");
+            }
+          }}/>
+        )}
+
         {!isProvider && job.status !== "completed" && job.status !== "cancelled" && (
           <button onClick={cancel} className="mt-3 w-full text-sm text-destructive py-3">Cancel job</button>
         )}
       </div>
     </MobileShell>
+  );
+}
+
+function CompletionForm({
+  jobId,
+  userId,
+  onSubmit,
+  onDone,
+}: {
+  jobId: string;
+  userId: string;
+  onSubmit: (p: { job_id: string; proof_paths: string[]; provider_notes?: string | null }) => Promise<unknown>;
+  onDone: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [items, setItems] = useState<{ path: string; url: string }[]>([]);
+  const [notes, setNotes] = useState("");
+
+  const pick = async (files: FileList | null) => {
+    if (!files) return;
+    setUploading(true);
+    try {
+      const next: { path: string; url: string }[] = [];
+      for (const file of Array.from(files).slice(0, 10 - items.length)) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${userId}/completion/${jobId}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage.from("job-media").upload(path, file, { cacheControl: "3600", upsert: false });
+        if (error) throw error;
+        const { data: s } = await supabase.storage.from("job-media").createSignedUrl(path, 3600);
+        next.push({ path, url: s?.signedUrl ?? "" });
+      }
+      setItems((m) => [...m, ...next]);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const remove = async (path: string) => {
+    await supabase.storage.from("job-media").remove([path]);
+    setItems((m) => m.filter((x) => x.path !== path));
+  };
+
+  const submit = async () => {
+    if (items.length === 0) return toast.error("Add at least one photo");
+    setSubmitting(true);
+    try {
+      await onSubmit({ job_id: jobId, proof_paths: items.map((x) => x.path), provider_notes: notes.trim() || null });
+      toast.success("Job marked complete");
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Submit failed");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mt-5 glass-strong rounded-2xl p-4">
+      <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Finish the job</div>
+      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => pick(e.target.files)}/>
+      <div className="mt-3 grid grid-cols-4 gap-2">
+        {items.map((m) => (
+          <div key={m.path} className="relative aspect-square rounded-xl overflow-hidden border border-white/5">
+            <img src={m.url} alt="" className="w-full h-full object-cover"/>
+            <button onClick={() => remove(m.path)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 grid place-items-center"><X className="w-3 h-3 text-white"/></button>
+          </div>
+        ))}
+        {items.length < 10 && (
+          <button onClick={() => fileRef.current?.click()} className="aspect-square rounded-xl border-2 border-dashed border-white/15 grid place-items-center text-muted-foreground hover:border-primary hover:text-primary transition">
+            {uploading ? <Loader2 className="w-5 h-5 animate-spin"/> : <Plus className="w-5 h-5"/>}
+          </button>
+        )}
+      </div>
+      <button onClick={() => fileRef.current?.click()} className="mt-2 w-full glass rounded-xl py-2.5 flex items-center justify-center gap-2 text-sm"><Camera className="w-4 h-4"/>Add proof photos</button>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Notes for the customer (optional)"
+        rows={3}
+        maxLength={1000}
+        className="mt-3 w-full glass rounded-xl p-3 text-sm bg-transparent outline-none resize-none"
+      />
+      <button
+        onClick={submit}
+        disabled={submitting || uploading || items.length === 0}
+        className="mt-3 w-full gradient-success text-white font-semibold py-4 rounded-2xl shadow-glow disabled:opacity-60"
+      >
+        {submitting ? "Submitting…" : "Mark complete"}
+      </button>
+    </div>
+  );
+}
+
+function RatingForm({ onSubmit }: { onSubmit: (rating: number, review: string | null) => Promise<void> }) {
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  return (
+    <div className="mt-5 glass-strong rounded-2xl p-4">
+      <div className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">How did it go?</div>
+      <div className="flex justify-center gap-2 my-3">
+        {[1,2,3,4,5].map((n) => (
+          <button key={n} onClick={() => setRating(n)} className="p-1">
+            <Star className={`w-9 h-9 transition ${n <= rating ? "fill-warning text-warning" : "text-muted-foreground"}`}/>
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={review}
+        onChange={(e) => setReview(e.target.value)}
+        placeholder="Leave a review (optional)"
+        rows={3}
+        maxLength={1000}
+        className="w-full glass rounded-xl p-3 text-sm bg-transparent outline-none resize-none"
+      />
+      <button
+        onClick={async () => {
+          if (rating === 0) return toast.error("Pick a rating");
+          setSubmitting(true);
+          try { await onSubmit(rating, review.trim() || null); } finally { setSubmitting(false); }
+        }}
+        disabled={submitting}
+        className="mt-3 w-full gradient-primary text-primary-foreground font-semibold py-4 rounded-2xl shadow-glow disabled:opacity-60"
+      >
+        {submitting ? "Submitting…" : "Submit rating"}
+      </button>
+    </div>
   );
 }
