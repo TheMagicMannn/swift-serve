@@ -4,6 +4,7 @@ import { RoleSwitch } from "@/components/RoleSwitch";
 import { quickActions, recentJobs } from "@/lib/mock";
 import * as Icons from "lucide-react";
 import { MapPin, Mic, Camera, ChevronRight, Sparkles, Clock, Star } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -21,7 +22,7 @@ function Home() {
           </div>
           <h1 className="text-2xl font-semibold mt-1 text-balance">Hi Alex,<br/>what do you need?</h1>
         </div>
-        <RoleSwitch />
+        <div className="flex items-center gap-2"><NotificationBell /><RoleSwitch /></div>
       </div>
 
       {/* AI search */}
