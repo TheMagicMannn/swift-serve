@@ -62,6 +62,8 @@ function Dashboard() {
     return () => { supabase.removeChannel(ch); };
   }, [user, fetchProvProfile, load]);
 
+  useProviderLocation(user?.id, !!pp?.is_online);
+
   const toggleOnline = async () => {
     if (!pp || toggling) return;
     setToggling(true);
