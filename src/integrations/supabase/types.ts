@@ -354,6 +354,36 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_locations: {
+        Row: {
+          accuracy: number | null
+          heading: number | null
+          lat: number
+          lng: number
+          provider_id: string
+          speed: number | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          heading?: number | null
+          lat: number
+          lng: number
+          provider_id: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          heading?: number | null
+          lat?: number
+          lng?: number
+          provider_id?: string
+          speed?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_profiles: {
         Row: {
           base_lat: number | null
