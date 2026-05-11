@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
+      disputes: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          opened_by: string
+          reason: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["dispute_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          opened_by: string
+          reason: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          opened_by?: string
+          reason?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_completions: {
         Row: {
           created_at: string
@@ -106,6 +183,7 @@ export type Database = {
       jobs: {
         Row: {
           address: string
+          cancelled_reason: string | null
           created_at: string
           customer_id: string
           description: string
@@ -116,6 +194,8 @@ export type Database = {
           platform_cents: number | null
           price_cents: number | null
           provider_id: string | null
+          refunded_at: string | null
+          refunded_cents: number | null
           scope_category: string | null
           scope_confidence: number | null
           scope_duration_minutes: number | null
@@ -130,6 +210,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          cancelled_reason?: string | null
           created_at?: string
           customer_id: string
           description: string
@@ -140,6 +221,8 @@ export type Database = {
           platform_cents?: number | null
           price_cents?: number | null
           provider_id?: string | null
+          refunded_at?: string | null
+          refunded_cents?: number | null
           scope_category?: string | null
           scope_confidence?: number | null
           scope_duration_minutes?: number | null
@@ -154,6 +237,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          cancelled_reason?: string | null
           created_at?: string
           customer_id?: string
           description?: string
@@ -164,6 +248,8 @@ export type Database = {
           platform_cents?: number | null
           price_cents?: number | null
           provider_id?: string | null
+          refunded_at?: string | null
+          refunded_cents?: number | null
           scope_category?: string | null
           scope_confidence?: number | null
           scope_duration_minutes?: number | null
@@ -350,7 +436,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cancel_job: {
+        Args: { _job_id: string; _reason: string }
+        Returns: undefined
+      }
+      admin_refund_job: {
+        Args: { _amount_cents: number; _job_id: string; _note?: string }
+        Returns: undefined
+      }
+      admin_resolve_dispute: {
+        Args: {
+          _dispute_id: string
+          _notes: string
+          _status: Database["public"]["Enums"]["dispute_status"]
+        }
+        Returns: undefined
+      }
       admin_stats: { Args: never; Returns: Json }
+      admin_update_job_status: {
+        Args: {
+          _job_id: string
+          _note?: string
+          _status: Database["public"]["Enums"]["job_status"]
+        }
+        Returns: undefined
+      }
       claim_job_offer: {
         Args: { _offer_id: string }
         Returns: {
@@ -368,6 +478,7 @@ export type Database = {
     }
     Enums: {
       app_role: "customer" | "provider" | "admin"
+      dispute_status: "open" | "resolved" | "refunded" | "rejected"
       job_status:
         | "draft"
         | "scoping"
@@ -378,6 +489,8 @@ export type Database = {
         | "in_progress"
         | "completed"
         | "cancelled"
+        | "refunded"
+        | "disputed"
       job_urgency: "standard" | "urgent" | "emergency"
       offer_status:
         | "pending"
@@ -513,6 +626,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["customer", "provider", "admin"],
+      dispute_status: ["open", "resolved", "refunded", "rejected"],
       job_status: [
         "draft",
         "scoping",
@@ -523,6 +637,8 @@ export const Constants = {
         "in_progress",
         "completed",
         "cancelled",
+        "refunded",
+        "disputed",
       ],
       job_urgency: ["standard", "urgent", "emergency"],
       offer_status: ["pending", "accepted", "declined", "expired", "cancelled"],
