@@ -57,6 +57,7 @@ function Track() {
   const [loading, setLoading] = useState(true);
   const [completion, setCompletion] = useState<Completion | null>(null);
   const [proofUrls, setProofUrls] = useState<string[]>([]);
+  const [providerLoc, setProviderLoc] = useState<{ lat: number; lng: number; updated_at: string } | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
