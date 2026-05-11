@@ -84,6 +84,25 @@ function Track() {
     return () => { supabase.removeChannel(ch); };
   }, [id, load]);
 
+  // Live provider location: load once + subscribe to updates while job is active
+  useEffect(() => {
+    const pid = job?.provider_id;
+    const active = job && ["assigned","en_route","arrived","in_progress"].includes(job.status);
+    if (!pid || !active) { setProviderLoc(null); return; }
+    let cancelled = false;
+    supabase.from("provider_locations").select("lat,lng,updated_at").eq("provider_id", pid).maybeSingle()
+      .then(({ data }) => { if (!cancelled && data) setProviderLoc(data as typeof providerLoc); });
+    const ch = supabase
+      .channel(`ploc_${pid}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_locations", filter: `provider_id=eq.${pid}` },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as { lat: number; lng: number; updated_at: string } | undefined;
+          if (row) setProviderLoc({ lat: Number(row.lat), lng: Number(row.lng), updated_at: row.updated_at });
+        })
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, [job?.provider_id, job?.status, job]);
+
   const isProvider = !!(job?.provider_id && user?.id === job.provider_id);
   const stageIdx = job ? STAGES.findIndex((s) => s.key === job.status) : -1;
   const fmt = (c: number | null) => c ? `$${(c/100).toFixed(0)}` : "—";
