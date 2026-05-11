@@ -163,6 +163,17 @@ function Track() {
           <Link to={isProvider ? "/provider/dashboard" : "/jobs"} className="w-10 h-10 glass-strong rounded-full grid place-items-center">←</Link>
           <div className="glass-strong rounded-full px-4 py-2 flex items-center gap-2 text-sm font-semibold capitalize"><Clock className="w-4 h-4 text-primary"/>{job.status.replace("_"," ")}</div>
         </div>
+        {providerLoc && (
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+            <span className="relative flex w-4 h-4">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping"/>
+              <span className="relative inline-flex rounded-full h-4 w-4 gradient-primary shadow-glow border-2 border-background"/>
+            </span>
+            <span className="glass-strong rounded-full px-2.5 py-1 text-[10px] font-medium tabular-nums">
+              {providerLoc.lat.toFixed(4)}, {providerLoc.lng.toFixed(4)} · live
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="-mt-8 relative bg-background rounded-t-3xl border-t border-white/5 px-5 pt-5 pb-32">
