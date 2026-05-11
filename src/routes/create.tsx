@@ -100,7 +100,8 @@ function Create() {
 
         <div className="fade-up" style={{ animationDelay: "60ms" }}>
           <label className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Photos & video</label>
-          <input ref={fileRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => onPickFiles(e.target.files)} />
+          <input ref={libRef} type="file" accept="image/*,video/*" multiple hidden onChange={(e) => onPickFiles(e.target.files)} />
+          <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => onPickFiles(e.target.files)} />
           <div className="mt-2 grid grid-cols-4 gap-2">
             {media.map((m) => (
               <div key={m.path} className="relative aspect-square rounded-2xl overflow-hidden border border-white/5">
@@ -109,20 +110,20 @@ function Create() {
                 ) : (
                   <div className="w-full h-full grid place-items-center text-3xl">📎</div>
                 )}
-                <button onClick={() => removeMedia(m.path)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 grid place-items-center">
+                <button type="button" onClick={() => removeMedia(m.path)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 grid place-items-center">
                   <X className="w-3 h-3 text-white"/>
                 </button>
               </div>
             ))}
             {media.length < 10 && (
-              <button onClick={() => fileRef.current?.click()} className="aspect-square rounded-2xl border-2 border-dashed border-white/15 grid place-items-center text-muted-foreground hover:border-primary hover:text-primary transition">
+              <button type="button" onClick={() => libRef.current?.click()} className="aspect-square rounded-2xl border-2 border-dashed border-white/15 grid place-items-center text-muted-foreground hover:border-primary hover:text-primary transition">
                 {uploading ? <Loader2 className="w-5 h-5 animate-spin"/> : <Plus className="w-5 h-5" />}
               </button>
             )}
           </div>
           <div className="flex gap-2 mt-2">
-            <button onClick={() => fileRef.current?.click()} className="flex-1 glass rounded-xl py-2.5 flex items-center justify-center gap-2 text-sm"><Camera className="w-4 h-4"/>Camera</button>
-            <button onClick={() => fileRef.current?.click()} className="flex-1 glass rounded-xl py-2.5 flex items-center justify-center gap-2 text-sm"><ImageIcon className="w-4 h-4"/>Library</button>
+            <button type="button" onClick={() => camRef.current?.click()} className="flex-1 glass rounded-xl py-2.5 flex items-center justify-center gap-2 text-sm"><Camera className="w-4 h-4"/>Camera</button>
+            <button type="button" onClick={() => libRef.current?.click()} className="flex-1 glass rounded-xl py-2.5 flex items-center justify-center gap-2 text-sm"><ImageIcon className="w-4 h-4"/>Library</button>
           </div>
         </div>
 
