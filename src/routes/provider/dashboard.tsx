@@ -7,6 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listJobOffersForProvider, getMyProviderProfile, upsertProviderProfile } from "@/lib/dispatch.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/lib/app-state";
+import { useProviderLocation } from "@/lib/use-provider-location";
 
 export const Route = createFileRoute("/provider/dashboard")({ component: Dashboard });
 
@@ -60,6 +61,8 @@ function Dashboard() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user, fetchProvProfile, load]);
+
+  useProviderLocation(user?.id, !!pp?.is_online);
 
   const toggleOnline = async () => {
     if (!pp || toggling) return;

@@ -57,6 +57,7 @@ function Track() {
   const [loading, setLoading] = useState(true);
   const [completion, setCompletion] = useState<Completion | null>(null);
   const [proofUrls, setProofUrls] = useState<string[]>([]);
+  const [providerLoc, setProviderLoc] = useState<{ lat: number; lng: number; updated_at: string } | null>(null);
 
   const load = useCallback(async () => {
     if (!id) return;
@@ -82,6 +83,25 @@ function Track() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [id, load]);
+
+  // Live provider location: load once + subscribe to updates while job is active
+  useEffect(() => {
+    const pid = job?.provider_id;
+    const active = job && ["assigned","en_route","arrived","in_progress"].includes(job.status);
+    if (!pid || !active) { setProviderLoc(null); return; }
+    let cancelled = false;
+    supabase.from("provider_locations").select("lat,lng,updated_at").eq("provider_id", pid).maybeSingle()
+      .then(({ data }) => { if (!cancelled && data) setProviderLoc(data as typeof providerLoc); });
+    const ch = supabase
+      .channel(`ploc_${pid}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "provider_locations", filter: `provider_id=eq.${pid}` },
+        (payload) => {
+          const row = (payload.new ?? payload.old) as { lat: number; lng: number; updated_at: string } | undefined;
+          if (row) setProviderLoc({ lat: Number(row.lat), lng: Number(row.lng), updated_at: row.updated_at });
+        })
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, [job?.provider_id, job?.status, job]);
 
   const isProvider = !!(job?.provider_id && user?.id === job.provider_id);
   const stageIdx = job ? STAGES.findIndex((s) => s.key === job.status) : -1;
@@ -143,6 +163,17 @@ function Track() {
           <Link to={isProvider ? "/provider/dashboard" : "/jobs"} className="w-10 h-10 glass-strong rounded-full grid place-items-center">←</Link>
           <div className="glass-strong rounded-full px-4 py-2 flex items-center gap-2 text-sm font-semibold capitalize"><Clock className="w-4 h-4 text-primary"/>{job.status.replace("_"," ")}</div>
         </div>
+        {providerLoc && (
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+            <span className="relative flex w-4 h-4">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping"/>
+              <span className="relative inline-flex rounded-full h-4 w-4 gradient-primary shadow-glow border-2 border-background"/>
+            </span>
+            <span className="glass-strong rounded-full px-2.5 py-1 text-[10px] font-medium tabular-nums">
+              {providerLoc.lat.toFixed(4)}, {providerLoc.lng.toFixed(4)} · live
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="-mt-8 relative bg-background rounded-t-3xl border-t border-white/5 px-5 pt-5 pb-32">
