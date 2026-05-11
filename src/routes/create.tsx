@@ -21,29 +21,41 @@ function Create() {
   const [urgency, setUrgency] = useState<Urgency>("standard");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const libRef = useRef<HTMLInputElement>(null);
+  const camRef = useRef<HTMLInputElement>(null);
 
   const onPickFiles = async (files: FileList | null) => {
-    if (!files || !user) return;
+    if (!files || files.length === 0) return;
+    if (!user) {
+      toast.error("Please sign in to upload photos");
+      return;
+    }
     setUploading(true);
     try {
       const next: MediaItem[] = [];
       for (const file of Array.from(files).slice(0, 10 - media.length)) {
-        const ext = file.name.split(".").pop() || "bin";
+        const ext = (file.name.split(".").pop() || "bin").toLowerCase();
         const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
         const { error } = await supabase.storage.from("job-media").upload(path, file, {
           cacheControl: "3600",
           upsert: false,
+          contentType: file.type || undefined,
         });
         if (error) throw error;
-        const { data: signed } = await supabase.storage.from("job-media").createSignedUrl(path, 3600);
+        const { data: signed, error: signErr } = await supabase.storage
+          .from("job-media").createSignedUrl(path, 3600);
+        if (signErr) console.warn("sign url failed", signErr.message);
         next.push({ path, previewUrl: signed?.signedUrl ?? "" });
       }
       setMedia((m) => [...m, ...next]);
+      if (next.length > 0) toast.success(`Uploaded ${next.length} file${next.length > 1 ? "s" : ""}`);
     } catch (e) {
+      console.error("[upload] failed", e);
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
+      if (libRef.current) libRef.current.value = "";
+      if (camRef.current) camRef.current.value = "";
     }
   };
 
