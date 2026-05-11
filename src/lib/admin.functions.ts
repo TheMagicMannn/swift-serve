@@ -82,7 +82,7 @@ export const adminUpdateJobStatus = createServerFn({ method: "POST" })
   }).parse)
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.rpc("admin_update_job_status", {
-      _job_id: data.job_id, _status: data.status, _note: data.note ?? null,
+      _job_id: data.job_id, _status: data.status, _note: data.note ?? undefined,
     });
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true };
@@ -111,7 +111,7 @@ export const adminRefundJob = createServerFn({ method: "POST" })
   }).parse)
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.rpc("admin_refund_job", {
-      _job_id: data.job_id, _amount_cents: data.amount_cents, _note: data.note ?? null,
+      _job_id: data.job_id, _amount_cents: data.amount_cents, _note: data.note ?? undefined,
     });
     if (error) throw new Response(error.message, { status: 400 });
     return { ok: true };
