@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listMyJobs } from "@/lib/jobs.functions";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { useApp } from "@/lib/app-state";
 
 export const Route = createFileRoute("/jobs")({ component: Jobs });
 
