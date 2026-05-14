@@ -1,43 +1,87 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell, StatusBar } from "@/components/MobileShell";
+import { Loader2, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useApp } from "@/lib/app-state";
 
 export const Route = createFileRoute("/provider/schedule")({ component: Schedule });
 
-const days = ["M","T","W","T","F","S","S"];
-const slots = [
-  { time: "9:00", title: "TV mount · Pacific Heights", price: 135, color: "primary" },
-  { time: "11:30", title: "Garbage disposal · Mission", price: 180, color: "primary" },
-  { time: "2:00", title: "Emergency · Burst pipe", price: 320, color: "emergency" },
-  { time: "5:00", title: "Furniture assembly · SOMA", price: 110, color: "primary" },
-];
+type ScheduleJob = {
+  id: string;
+  status: string;
+  scope_title: string | null;
+  address: string;
+  price_cents: number | null;
+  urgency: string;
+  updated_at: string;
+};
+
+const ACTIVE = ["assigned", "en_route", "arrived", "in_progress"];
 
 function Schedule() {
+  const { user } = useApp();
+  const [jobs, setJobs] = useState<ScheduleJob[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("jobs")
+      .select("id, status, scope_title, address, price_cents, urgency, updated_at")
+      .eq("provider_id", user.id)
+      .in("status", ACTIVE)
+      .order("updated_at", { ascending: true })
+      .then(({ data }) => {
+        setJobs((data ?? []) as ScheduleJob[]);
+        setLoading(false);
+      });
+  }, [user]);
+
+  const total = jobs.reduce((s, j) => s + (j.price_cents ?? 0), 0);
+
   return (
     <MobileShell>
       <StatusBar title="Schedule" />
-      <div className="px-5 pt-4">
-        <div className="glass-strong rounded-3xl p-4 flex justify-between">
-          {days.map((d, i) => (
-            <button key={i} className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl ${i === 2 ? "gradient-primary text-primary-foreground shadow-glow" : ""}`}>
-              <span className="text-[10px] uppercase opacity-70">{d}</span>
-              <span className="text-base font-bold">{12 + i}</span>
-            </button>
-          ))}
+      <div className="px-5 pt-4 pb-8">
+        <div className="glass-strong rounded-3xl p-5 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl gradient-primary grid place-items-center shadow-glow">
+            <Calendar className="w-5 h-5 text-primary-foreground"/>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">Today</div>
+            <div className="font-semibold">{jobs.length} active · ${(total/100).toFixed(0)}</div>
+          </div>
         </div>
 
-        <div className="mt-5 text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Today · 4 jobs · $745</div>
-
-        <div className="space-y-3">
-          {slots.map((s, i) => (
-            <div key={i} className="flex gap-3 fade-up" style={{ animationDelay: `${i * 60}ms` }}>
-              <div className="text-xs text-muted-foreground font-mono w-12 pt-3">{s.time}</div>
-              <div className={`flex-1 rounded-2xl p-4 border border-white/5 ${s.color === "emergency" ? "gradient-emergency text-white" : "glass-strong"}`}>
-                <div className="font-medium text-sm">{s.title}</div>
-                <div className={`text-xs mt-1 ${s.color === "emergency" ? "text-white/80" : "text-muted-foreground"}`}>${s.price} payout</div>
-              </div>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="py-20 grid place-items-center"><Loader2 className="w-5 h-5 animate-spin text-primary"/></div>
+        ) : jobs.length === 0 ? (
+          <div className="mt-6 glass rounded-2xl p-8 text-center text-sm text-muted-foreground">
+            No assigned jobs. Go online from the dashboard to receive offers.
+          </div>
+        ) : (
+          <div className="mt-5 space-y-3">
+            {jobs.map((j) => {
+              const emergency = j.urgency === "emergency";
+              return (
+                <Link
+                  key={j.id}
+                  to="/track"
+                  search={{ id: j.id } as never}
+                  className={`block rounded-2xl p-4 border border-white/5 fade-up ${emergency ? "gradient-emergency text-white" : "glass-strong"}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${emergency ? "" : "text-muted-foreground"}`}>{j.status.replace("_", " ")}</span>
+                    <span className="text-sm font-bold">${((j.price_cents ?? 0)/100).toFixed(0)}</span>
+                  </div>
+                  <div className="font-medium text-sm mt-1.5 truncate">{j.scope_title ?? "Job"}</div>
+                  <div className={`text-xs mt-0.5 truncate ${emergency ? "text-white/80" : "text-muted-foreground"}`}>{j.address}</div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </MobileShell>
   );
