@@ -1,37 +1,71 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell, StatusBar } from "@/components/MobileShell";
-import { CheckCircle2, MessageSquare, CreditCard, Star, Zap } from "lucide-react";
+import { Bell, CheckCircle2, MessageSquare, Inbox, Loader2 } from "lucide-react";
+import { useNotifications } from "@/lib/notifications";
 
 export const Route = createFileRoute("/activity")({ component: Activity });
 
-const items = [
-  { icon: CheckCircle2, color: "text-success", title: "Job completed", sub: "TV mount · Marcus T.", time: "2h ago" },
-  { icon: CreditCard, color: "text-primary", title: "Payment captured", sub: "$135.00 · Visa ••4242", time: "2h ago" },
-  { icon: Star, color: "text-warning", title: "Review submitted", sub: "5 stars to Marcus T.", time: "2h ago" },
-  { icon: MessageSquare, color: "text-primary", title: "New message", sub: "Diane L.: All done!", time: "Yesterday" },
-  { icon: Zap, color: "text-emergency", title: "Emergency dispatched", sub: "Burst pipe · 1.2 mi", time: "3 days ago" },
-];
+function iconFor(kind: string) {
+  if (kind === "chat") return MessageSquare;
+  if (kind === "offer") return Inbox;
+  if (kind === "job") return CheckCircle2;
+  return Bell;
+}
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
 
 function Activity() {
+  const { items, loading, markAllRead, unread } = useNotifications();
+
   return (
     <MobileShell>
-      <StatusBar title="Activity" />
-      <div className="px-5 pt-4 space-y-2">
-        {items.map((it, i) => {
-          const Icon = it.icon;
-          return (
-            <div key={i} className="glass rounded-2xl p-4 flex items-start gap-3 fade-up" style={{ animationDelay: `${i * 40}ms` }}>
-              <div className={`w-10 h-10 rounded-xl bg-secondary grid place-items-center ${it.color}`}>
-                <Icon className="w-5 h-5"/>
+      <StatusBar
+        title="Activity"
+        action={
+          unread > 0 ? (
+            <button onClick={markAllRead} className="text-xs text-primary font-medium">Mark all read</button>
+          ) : null
+        }
+      />
+      <div className="px-5 pt-4 pb-8 space-y-2">
+        {loading ? (
+          <div className="py-20 grid place-items-center"><Loader2 className="w-5 h-5 animate-spin text-primary"/></div>
+        ) : items.length === 0 ? (
+          <div className="text-center py-20">
+            <Bell className="w-8 h-8 text-muted-foreground mx-auto"/>
+            <p className="mt-3 text-sm text-muted-foreground">No activity yet</p>
+          </div>
+        ) : (
+          items.map((n, i) => {
+            const Icon = iconFor(n.kind);
+            const inner = (
+              <div className={`glass rounded-2xl p-4 flex items-start gap-3 fade-up ${n.read_at ? "" : "border border-primary/30"}`} style={{ animationDelay: `${Math.min(i, 10) * 30}ms` }}>
+                <div className="w-10 h-10 rounded-xl bg-secondary grid place-items-center text-primary">
+                  <Icon className="w-5 h-5"/>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{n.title}</div>
+                  {n.body && <div className="text-xs text-muted-foreground truncate">{n.body}</div>}
+                </div>
+                <div className="text-[10px] text-muted-foreground whitespace-nowrap">{timeAgo(n.created_at)}</div>
               </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium">{it.title}</div>
-                <div className="text-xs text-muted-foreground">{it.sub}</div>
-              </div>
-              <div className="text-[10px] text-muted-foreground">{it.time}</div>
-            </div>
-          );
-        })}
+            );
+            return n.job_id ? (
+              <Link key={n.id} to="/track" search={{ id: n.job_id } as never}>{inner}</Link>
+            ) : (
+              <div key={n.id}>{inner}</div>
+            );
+          })
+        )}
       </div>
     </MobileShell>
   );
