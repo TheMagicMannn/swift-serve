@@ -59,6 +59,12 @@ function Jobs() {
 
         {isLoading ? (
           <div className="py-20 grid place-items-center"><Loader2 className="w-6 h-6 animate-spin text-primary"/></div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <AlertTriangle className="w-8 h-8 text-warning mx-auto"/>
+            <p className="mt-3 text-sm text-muted-foreground">{(error as Error).message || "Couldn't load your jobs"}</p>
+            <button onClick={() => refetch()} className="mt-4 px-5 py-2.5 rounded-2xl glass-strong text-sm font-medium">Retry</button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-sm text-muted-foreground">No jobs yet</p>
