@@ -24,10 +24,13 @@ const statusColor: Record<string, string> = {
 type Filter = "All" | "Active" | "Completed" | "Drafts";
 
 function Jobs() {
+  const { user } = useApp();
   const fetchJobs = useServerFn(listMyJobs);
-  const { data: jobs, isLoading } = useQuery({
-    queryKey: ["jobs", "mine"],
+  const { data: jobs, isLoading, error, refetch } = useQuery({
+    queryKey: ["jobs", "mine", user?.id],
     queryFn: () => fetchJobs(),
+    enabled: !!user,
+    retry: 1,
   });
   const [filter, setFilter] = useState<Filter>("All");
 
