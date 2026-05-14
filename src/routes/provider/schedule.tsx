@@ -17,7 +17,7 @@ type ScheduleJob = {
   updated_at: string;
 };
 
-const ACTIVE = ["assigned", "en_route", "arrived", "in_progress"];
+const ACTIVE = ["assigned", "en_route", "arrived", "in_progress"] as const;
 
 function Schedule() {
   const { user } = useApp();
