@@ -4,7 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { listMyJobs } from "@/lib/jobs.functions";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { useApp } from "@/lib/app-state";
 
 export const Route = createFileRoute("/jobs")({ component: Jobs });
 
@@ -23,10 +24,13 @@ const statusColor: Record<string, string> = {
 type Filter = "All" | "Active" | "Completed" | "Drafts";
 
 function Jobs() {
+  const { user } = useApp();
   const fetchJobs = useServerFn(listMyJobs);
-  const { data: jobs, isLoading } = useQuery({
-    queryKey: ["jobs", "mine"],
+  const { data: jobs, isLoading, error, refetch } = useQuery({
+    queryKey: ["jobs", "mine", user?.id],
     queryFn: () => fetchJobs(),
+    enabled: !!user,
+    retry: 1,
   });
   const [filter, setFilter] = useState<Filter>("All");
 
@@ -55,6 +59,12 @@ function Jobs() {
 
         {isLoading ? (
           <div className="py-20 grid place-items-center"><Loader2 className="w-6 h-6 animate-spin text-primary"/></div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <AlertTriangle className="w-8 h-8 text-warning mx-auto"/>
+            <p className="mt-3 text-sm text-muted-foreground">{(error as Error).message || "Couldn't load your jobs"}</p>
+            <button onClick={() => refetch()} className="mt-4 px-5 py-2.5 rounded-2xl glass-strong text-sm font-medium">Retry</button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-sm text-muted-foreground">No jobs yet</p>
